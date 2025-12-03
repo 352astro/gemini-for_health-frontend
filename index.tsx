@@ -183,7 +183,7 @@ const RingProgress: React.FC<{ current: number; target: number; children: React.
 };
 
 const MealCard: React.FC<{ meal: MealItem }> = ({ meal }) => (
-  <div className="flex items-center p-4 mb-3 bg-white rounded-2xl shadow-sm border border-slate-50 animate-in fade-in slide-in-from-bottom-4 duration-500">
+  <div className="flex items-center p-4 mb-3 bg-white rounded-2xl shadow-sm border border-slate-50 transition-all hover:shadow-md">
     <div className={`w-12 h-12 rounded-xl mr-4 overflow-hidden shrink-0 flex items-center justify-center ${
       !meal.image ? (
         meal.type === 'Breakfast' ? 'bg-orange-100 text-orange-600' :
@@ -213,7 +213,7 @@ const MealCard: React.FC<{ meal: MealItem }> = ({ meal }) => (
 );
 
 const ActivityCard: React.FC<{ activity: ActivityItem }> = ({ activity }) => (
-    <div className="flex items-center p-4 mb-3 bg-white rounded-2xl shadow-sm border border-orange-50 animate-in fade-in slide-in-from-bottom-4 duration-500 relative overflow-hidden">
+    <div className="flex items-center p-4 mb-3 bg-white rounded-2xl shadow-sm border border-orange-50 relative overflow-hidden transition-all hover:shadow-md">
         {/* Decorative indicator */}
         <div className="absolute left-0 top-4 bottom-4 w-1 bg-orange-400 rounded-r-full"></div>
         
@@ -267,7 +267,7 @@ const StatsView: React.FC<{ meals: MealItem[], exercises: ActivityItem[] }> = ({
     const maxBalance = Math.max(totalIn, totalBurn, 100);
 
     return (
-        <div className="animate-in fade-in space-y-4">
+        <div className="space-y-4">
             {/* Calories Balance Bar Chart */}
             <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-50">
                 <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
@@ -1531,114 +1531,125 @@ const App = () => {
     <div className="min-h-screen bg-slate-50 flex justify-center">
       <div className="w-full max-w-md bg-white min-h-screen shadow-2xl relative overflow-hidden flex flex-col">
         
-        {/* Header Background */}
-        <div className="absolute top-0 left-0 w-full h-64 bg-emerald-500 rounded-b-[3rem] z-0"></div>
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-400 rounded-full blur-2xl opacity-50 z-0"></div>
+        {/* Header Background Layer - Moves up when in Chart mode */}
+        <div className={`absolute top-0 left-0 w-full h-64 bg-emerald-500 rounded-b-[3rem] z-0 transition-transform duration-700 ease-in-out ${viewMode === 'chart' ? '-translate-y-full' : 'translate-y-0'}`}></div>
+        <div className={`absolute -top-10 -right-10 w-40 h-40 bg-emerald-400 rounded-full blur-2xl opacity-50 z-0 transition-transform duration-700 ease-in-out ${viewMode === 'chart' ? '-translate-y-full' : 'translate-y-0'}`}></div>
 
         {/* Content */}
-        <div className="relative z-10 p-6 flex flex-col h-full">
+        <div className="relative z-10 flex flex-col h-full">
           
-          {/* Top Bar */}
-          <div className="flex justify-between items-center text-white mb-6 pt-2">
-            <div>
-              <p className="text-emerald-100 text-sm font-medium">Tuesday, 14 Nov</p>
-              <h1 className="text-2xl font-bold">Hello, Alex</h1>
-            </div>
-            <button 
-                onClick={() => setShowProfile(true)}
-                className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors border border-white/20"
-            >
-               <User size={20} className="text-white" />
-            </button>
+          {/* Collapsible Header Group */}
+          <div className={`shrink-0 overflow-hidden transition-all duration-700 ease-in-out ${viewMode === 'chart' ? 'max-h-0 opacity-0' : 'max-h-[500px] opacity-100'}`}>
+               <div className="p-6 pb-2">
+                    {/* Top Bar */}
+                    <div className="flex justify-between items-center text-white mb-6 pt-2">
+                        <div>
+                            <p className="text-emerald-100 text-sm font-medium">Tuesday, 14 Nov</p>
+                            <h1 className="text-2xl font-bold">Hello, Alex</h1>
+                        </div>
+                        <button 
+                            onClick={() => setShowProfile(true)}
+                            className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors border border-white/20"
+                        >
+                        <User size={20} className="text-white" />
+                        </button>
+                    </div>
+
+                    {/* Daily Summary Card */}
+                    <div className="bg-white rounded-3xl p-6 shadow-xl shadow-emerald-900/10 mb-4 animate-in zoom-in-95 duration-500">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-lg font-bold text-slate-800">Daily Net</h2>
+                            <span className="text-emerald-500 text-xs font-bold bg-emerald-50 px-2 py-1 rounded-lg">Target: {stats.calories.target}</span>
+                        </div>
+
+                        <div className="flex items-center gap-6">
+                            <div className="shrink-0 relative">
+                                <RingProgress current={stats.calories.current - stats.burned} target={stats.calories.target}>
+                                    <div className="flex flex-col items-center justify-center">
+                                        <div className="flex items-center gap-0.5 text-emerald-500 mb-0.5">
+                                            <span className="text-[10px] font-bold">+</span>
+                                            <span className="text-xs font-bold">{Math.round(stats.calories.current)}</span>
+                                        </div>
+                                        <div className="relative">
+                                            <span className="text-2xl font-black text-slate-800 tracking-tight leading-none">
+                                                {Math.round(stats.calories.current - stats.burned)}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-0.5 text-orange-500 mt-0.5">
+                                            <span className="text-[10px] font-bold">-</span>
+                                            <span className="text-xs font-bold">{Math.round(stats.burned)}</span>
+                                        </div>
+                                    </div>
+                                </RingProgress>
+                            </div>
+                            
+                            <div className="flex-1 space-y-3">
+                                <div>
+                                    <div className="flex justify-between text-xs mb-1">
+                                        <span className="text-slate-500 font-medium flex items-center gap-1"><Wheat size={12}/> Carbs</span>
+                                        <span className="text-slate-800 font-bold">{Math.round(stats.carbs.current)}/{stats.carbs.target}g</span>
+                                    </div>
+                                    <ProgressBar current={stats.carbs.current} target={stats.carbs.target} colorClass="bg-amber-400" />
+                                </div>
+                                <div>
+                                    <div className="flex justify-between text-xs mb-1">
+                                        <span className="text-slate-500 font-medium flex items-center gap-1"><Droplet size={12}/> Fat</span>
+                                        <span className="text-slate-800 font-bold">{Math.round(stats.fat.current)}/{stats.fat.target}g</span>
+                                    </div>
+                                    <ProgressBar current={stats.fat.current} target={stats.fat.target} colorClass="bg-rose-400" />
+                                </div>
+                                <div>
+                                    <div className="flex justify-between text-xs mb-1">
+                                        <span className="text-slate-500 font-medium flex items-center gap-1"><Activity size={12}/> Protein</span>
+                                        <span className="text-slate-800 font-bold">{Math.round(stats.protein.current)}/{stats.protein.target}g</span>
+                                    </div>
+                                    <ProgressBar current={stats.protein.current} target={stats.protein.target} colorClass="bg-blue-400" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* AI Insight */}
+                    {suggestion && (
+                        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-2 flex gap-3 items-start animate-in fade-in slide-in-from-top-2">
+                            <div className="bg-indigo-100 p-2 rounded-full text-indigo-600 shrink-0"><Sparkles size={16} /></div>
+                            <div>
+                                <h3 className="text-xs font-bold text-indigo-800 uppercase tracking-wide mb-1">AI Insight</h3>
+                                <p className="text-sm text-indigo-700 leading-snug">{suggestion}</p>
+                            </div>
+                        </div>
+                    )}
+               </div>
           </div>
 
-          {/* Daily Summary Card */}
-          <div className="bg-white rounded-3xl p-6 shadow-xl shadow-emerald-900/10 mb-8 animate-in zoom-in-95 duration-500">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold text-slate-800">Daily Net</h2>
-              <span className="text-emerald-500 text-xs font-bold bg-emerald-50 px-2 py-1 rounded-lg">Target: {stats.calories.target}</span>
-            </div>
+          {/* Persistent Content - Stacked for Silk Transition */}
+          <div className="flex-1 relative bg-slate-50 overflow-hidden">
+             
+             {/* Sticky Toggle Bar */}
+             <div className="absolute top-0 left-0 right-0 z-30 px-6 pt-4 pb-2 bg-gradient-to-b from-slate-50 via-slate-50/90 to-transparent">
+                 <div className="flex justify-between items-center">
+                    <h2 className="text-lg font-bold text-slate-800 transition-all duration-500">
+                        {viewMode === 'list' ? 'Timeline' : 'Analytics'}
+                    </h2>
+                    <button 
+                        onClick={() => setViewMode(viewMode === 'list' ? 'chart' : 'list')}
+                        className="bg-white/80 backdrop-blur-md shadow-sm hover:bg-white text-slate-500 p-2 rounded-xl transition-all border border-slate-100/50"
+                    >
+                        {viewMode === 'list' ? <BarChart3 size={20} /> : <List size={20} />}
+                    </button>
+                 </div>
+             </div>
 
-            <div className="flex items-center gap-6">
-              <div className="shrink-0 relative">
-                <RingProgress current={stats.calories.current - stats.burned} target={stats.calories.target}>
-                   <div className="flex flex-col items-center justify-center">
-                       {/* Intake */}
-                       <div className="flex items-center gap-0.5 text-emerald-500 mb-0.5">
-                           <span className="text-[10px] font-bold">+</span>
-                           <span className="text-xs font-bold">{Math.round(stats.calories.current)}</span>
-                       </div>
-                       
-                       {/* Net */}
-                       <div className="relative">
-                           <span className="text-2xl font-black text-slate-800 tracking-tight leading-none">
-                               {Math.round(stats.calories.current - stats.burned)}
-                           </span>
-                       </div>
-                       
-                       {/* Burned */}
-                       <div className="flex items-center gap-0.5 text-orange-500 mt-0.5">
-                           <span className="text-[10px] font-bold">-</span>
-                           <span className="text-xs font-bold">{Math.round(stats.burned)}</span>
-                       </div>
-                   </div>
-                </RingProgress>
-              </div>
-              
-              <div className="flex-1 space-y-3">
-                 {/* Macros */}
-                <div>
-                    <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-500 font-medium flex items-center gap-1"><Wheat size={12}/> Carbs</span>
-                        <span className="text-slate-800 font-bold">{Math.round(stats.carbs.current)}/{stats.carbs.target}g</span>
-                    </div>
-                    <ProgressBar current={stats.carbs.current} target={stats.carbs.target} colorClass="bg-amber-400" />
-                </div>
-                <div>
-                    <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-500 font-medium flex items-center gap-1"><Droplet size={12}/> Fat</span>
-                        <span className="text-slate-800 font-bold">{Math.round(stats.fat.current)}/{stats.fat.target}g</span>
-                    </div>
-                    <ProgressBar current={stats.fat.current} target={stats.fat.target} colorClass="bg-rose-400" />
-                </div>
-                <div>
-                    <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-500 font-medium flex items-center gap-1"><Activity size={12}/> Protein</span>
-                        <span className="text-slate-800 font-bold">{Math.round(stats.protein.current)}/{stats.protein.target}g</span>
-                    </div>
-                    <ProgressBar current={stats.protein.current} target={stats.protein.target} colorClass="bg-blue-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Timeline / Charts Switcher */}
-          <div className="flex-1">
-            {suggestion && viewMode === 'list' && (
-                <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6 flex gap-3 items-start animate-in fade-in slide-in-from-top-2">
-                    <div className="bg-indigo-100 p-2 rounded-full text-indigo-600 shrink-0"><Sparkles size={16} /></div>
-                    <div>
-                        <h3 className="text-xs font-bold text-indigo-800 uppercase tracking-wide mb-1">AI Insight</h3>
-                        <p className="text-sm text-indigo-700 leading-snug">{suggestion}</p>
-                    </div>
-                </div>
-            )}
-
-            <div className="flex justify-between items-center mb-4">
-               <h2 className="text-lg font-bold text-slate-800">
-                   {viewMode === 'list' ? 'Timeline' : 'Analysis'}
-               </h2>
-               <button 
-                  onClick={() => setViewMode(viewMode === 'list' ? 'chart' : 'list')}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-500 p-2 rounded-xl transition-colors"
-               >
-                   {viewMode === 'list' ? <BarChart3 size={20} /> : <List size={20} />}
-               </button>
-            </div>
-            
-            <div className="pb-24 space-y-2">
-              {viewMode === 'list' ? (
-                  timeline.length === 0 ? (
+             {/* View 1: Timeline - Fades out and slides away */}
+             <div 
+                className={`absolute inset-0 pt-20 px-6 pb-24 overflow-y-auto no-scrollbar transition-all duration-700 ease-in-out ${
+                    viewMode === 'list' 
+                    ? 'opacity-100 translate-y-0 scale-100 z-10' 
+                    : 'opacity-0 translate-y-10 scale-95 z-0 pointer-events-none'
+                }`}
+             >
+                <div className="space-y-2">
+                  {timeline.length === 0 ? (
                      <div className="text-center py-10 opacity-50">
                         <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
                             <Leaf className="text-slate-400" />
@@ -1651,11 +1662,21 @@ const App = () => {
                         ? <MealCard key={item.id} meal={item as MealItem} />
                         : <ActivityCard key={item.id} activity={item as ActivityItem} />
                     ))
-                  )
-              ) : (
+                  )}
+                </div>
+             </div>
+
+             {/* View 2: Analytics - Fades in and slides up */}
+             <div 
+                className={`absolute inset-0 pt-20 px-6 pb-24 overflow-y-auto no-scrollbar transition-all duration-700 ease-in-out ${
+                    viewMode === 'chart' 
+                    ? 'opacity-100 translate-y-0 scale-100 z-10' 
+                    : 'opacity-0 translate-y-10 scale-95 z-0 pointer-events-none'
+                }`}
+             >
                   <StatsView meals={meals} exercises={exercises} />
-              )}
-            </div>
+             </div>
+
           </div>
         </div>
 
