@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { GoogleGenAI } from "@google/genai";
-import { Plus, User, Sparkles, Utensils, Dumbbell, BarChart3, List, Leaf, Wheat, Droplet, Activity } from "lucide-react";
+import { Plus, User, Sparkles, Utensils, Dumbbell, BarChart3, List, Leaf, Wheat, Droplet, Activity, MessageCircle } from "lucide-react";
 
 import { UserProfile, DailyStats, MealItem, ActivityItem, TimelineItem, WeightRecord } from "./types";
 import { INITIAL_STATS, INITIAL_PROFILE } from "./MockData";
@@ -14,6 +14,7 @@ import EditProfileScreen from "./EditProfileScreen";
 import ProfileView from "./ProfileView";
 import { AnalyticsView } from "./AnalyticsView";
 import { WeightTrackerView } from "./WeightTrackerView";
+import { AiChatView } from "./AiChatView";
 
 const App = () => {
   const [stats, setStats] = useState<DailyStats>(INITIAL_STATS);
@@ -38,6 +39,9 @@ const App = () => {
       { date: '2023-11-14', weight: 72.0 }
   ]);
   const [isWeightTrackerOpen, setIsWeightTrackerOpen] = useState(false);
+
+  // Chat State
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const [suggestion, setSuggestion] = useState<string>("Ready to track! Add your first meal to get AI insights.");
   const [viewMode, setViewMode] = useState<'list' | 'chart'>('list');
@@ -192,15 +196,27 @@ const App = () => {
                         </div>
                     </div>
 
-                    {/* AI Insight */}
+                    {/* AI Insight Button (Relative Layout) */}
                     {suggestion && (
-                        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-2 flex gap-3 items-start animate-in fade-in slide-in-from-top-2">
-                            <div className="bg-indigo-100 p-2 rounded-full text-indigo-600 shrink-0"><Sparkles size={16} /></div>
-                            <div>
-                                <h3 className="text-xs font-bold text-indigo-800 uppercase tracking-wide mb-1">AI Insight</h3>
-                                <p className="text-sm text-indigo-700 leading-snug">{suggestion}</p>
+                        <button 
+                            onClick={() => setIsChatOpen(true)}
+                            className="w-full bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-2 flex gap-3 items-start text-left animate-in fade-in slide-in-from-top-2 hover:bg-indigo-100 transition-colors group"
+                        >
+                            <div className="bg-indigo-100 p-2 rounded-full text-indigo-600 shrink-0 group-hover:bg-white group-hover:shadow-sm transition-all mt-0.5">
+                                <Sparkles size={16} />
                             </div>
-                        </div>
+                            <div className="flex-1">
+                                <div className="flex justify-between items-start mb-1">
+                                    <h3 className="text-xs font-bold text-indigo-800 uppercase tracking-wide">
+                                        AI Insight
+                                    </h3>
+                                    <span className="text-[10px] font-bold text-indigo-400 bg-white/60 px-2 py-0.5 rounded-full border border-indigo-100 group-hover:bg-white group-hover:text-indigo-600 transition-colors flex items-center gap-1 ml-2 shrink-0">
+                                        Click to chat <MessageCircle size={10} />
+                                    </span>
+                                </div>
+                                <p className="text-sm text-indigo-700 leading-snug line-clamp-2">{suggestion}</p>
+                            </div>
+                        </button>
                     )}
                </div>
           </div>
@@ -323,6 +339,16 @@ const App = () => {
                 history={weightHistory}
                 onClose={() => setIsWeightTrackerOpen(false)}
                 onSave={handleSaveWeight}
+            />
+        )}
+
+        {/* AI Chat Overlay */}
+        {isChatOpen && (
+            <AiChatView 
+                onClose={() => setIsChatOpen(false)}
+                userProfile={userProfile}
+                currentStats={stats}
+                initialContext={suggestion}
             />
         )}
 
